@@ -19,7 +19,6 @@ export default function LoginPage() {
       const user = result.user;
       setUser(user);
       alert(`Welcome ${user.displayName}`);
-      await router.push("/survey");
     } catch (error) {
       console.error("Error during Google login:", error);
       alert("Login failed!");
