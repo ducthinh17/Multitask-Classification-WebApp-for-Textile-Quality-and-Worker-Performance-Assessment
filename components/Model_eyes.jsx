@@ -130,7 +130,7 @@ const ModelPredictor = () => {
     setError("");
 
     try {
-      const modelUrl = "/tfjs_model/model_after.json"; // Đường dẫn tới mô hình TensorFlow.js
+      const modelUrl = "/tfjs_model/model__7_after.json"; // Đường dẫn tới mô hình TensorFlow.js
       const loadedModel = await tf.loadLayersModel(modelUrl);
       const img = await loadImageFromPublic(imagePath);
       const preprocessedImage = preprocessImage(img);
