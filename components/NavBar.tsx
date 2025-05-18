@@ -106,14 +106,9 @@ const NAV_ITEMS: Array<NavItem> = [
     href: "#",
     children: [
       {
-        label: "Khám phá Tính năng A",
-        subLabel: "Mô tả ngắn gọn về A",
+        label: " Quản lý chất lượng nhân công",
+        subLabel: "Lưu trữ & Đánh giá chất lượng",
         href: "/database",
-      },
-      {
-        label: "Tìm hiểu Tính năng B",
-        subLabel: "Mô tả về B",
-        href: "/features/b",
       },
       {
         label: "Tài liệu bên ngoài",
