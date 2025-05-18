@@ -16,14 +16,10 @@ import {
   Spinner,
   Alert,
   AlertIcon,
-  // AlertTitle, // No longer used directly
-  // AlertDescription, // No longer used directly
   useToast,
   Input,
-  // AspectRatio, // No longer used directly
   Center,
   Icon,
-  // Tag, // No longer used directly
   Progress,
   IconButton,
   Table,
@@ -44,7 +40,6 @@ import {
   Tooltip,
   FormControl,
   FormLabel,
-  // Stack, // No longer used directly
 } from "@chakra-ui/react";
 import {
   FiFile,
@@ -57,7 +52,7 @@ import {
   FiUser,
   FiEdit2,
   FiCheckSquare,
-  FiSave, // Added for Save button
+  FiSave,
 } from "react-icons/fi";
 import {
   CheckCircleIcon,
@@ -70,15 +65,14 @@ import {
 } from "@chakra-ui/icons";
 
 // Firebase imports
-import { db } from "../firebase/firebaseConfig"; // Adjust path if your firebase.ts is elsewhere
+import { db } from "../firebase/firebaseConfig";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 
 import { PREDICT_API_URL } from "../config";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
-// import HealthTips from "../components/HealthTips";
 
-// --- START: Định nghĩa Interfaces (No changes here from previous version) ---
+// --- START: Định nghĩa Interfaces ---
 interface PredictionDetail {
   label: string;
   confidence: string;
@@ -138,11 +132,11 @@ interface AssessmentRecord {
   skillRankValue: number;
   processedImages: SavedImagePrediction[];
   savedAt: Timestamp;
-  sessionId?: string; // Optional: if you want to group multiple saves in a session
+  sessionId?: string;
 }
 // --- END: Firebase Data Structure Interfaces ---
 
-// --- START: Component ResultCard (No changes here from previous version) ---
+// --- START: Component ResultCard ---
 interface ResultCardProps {
   title: string;
   label: string;
@@ -208,7 +202,7 @@ const ResultCard: React.FC<ResultCardProps> = ({
 };
 // --- END: Component ResultCard ---
 
-// --- START: Component PredictionResults (No changes here from previous version) ---
+// --- START: Component PredictionResults ---
 interface PredictionResultsProps {
   data: PredictionResponseForDisplay | null | undefined;
 }
@@ -293,7 +287,7 @@ const PredictionResults: React.FC<PredictionResultsProps> = ({ data }) => {
 };
 // --- END: Component PredictionResults ---
 
-// --- START: Component HeaderWithLines (No changes here from previous version) ---
+// --- START: Component HeaderWithLines ---
 const HeaderWithLines: React.FC<{
   title: string;
   icon?: React.ElementType;
@@ -325,7 +319,7 @@ const HeaderWithLines: React.FC<{
 );
 // --- END: Component HeaderWithLines ---
 
-// --- START: COMPONENT UploadedImageItem (No changes here from previous version) ---
+// --- START: COMPONENT UploadedImageItem ---
 interface UploadedImageItemProps {
   imageFile: UploadedImageFile;
   onRemove: (id: string) => void;
@@ -473,7 +467,7 @@ const UploadedImageItem: React.FC<UploadedImageItemProps> = ({
 };
 // --- END: COMPONENT UploadedImageItem ---
 
-// --- START: COMPONENT WorkerInformationForm (No changes here from previous version) ---
+// --- START: COMPONENT WorkerInformationForm ---
 interface WorkerInformationFormProps {
   workerInfo: WorkerInfo;
   isSubmitted: boolean;
@@ -605,7 +599,7 @@ const WorkerInformationForm: React.FC<WorkerInformationFormProps> = ({
 };
 // --- END: COMPONENT WorkerInformationForm ---
 
-// --- START: COMPONENT OverallResultsDisplay (No changes here from previous version) ---
+// --- START: COMPONENT OverallResultsDisplay ---
 interface OverallResultsDisplayProps {
   files: UploadedImageFile[];
   averageLevel: number | null;
@@ -635,7 +629,6 @@ const OverallResultsDisplay: React.FC<OverallResultsDisplayProps> = ({
   const shouldShowOverallBox =
     workerInfo || averageLevel !== null || skillRank !== null;
 
-  // Determine if any file has been processed (attempted prediction)
   const anyFileProcessed = files.some(
     (f) => f.status === "thành công" || f.status === "thất bại"
   );
@@ -817,6 +810,15 @@ const parseLevel = (levelLabel: string): number | null => {
 };
 // --- END: Utility function ---
 
+// --- START: New Interface for typed promise results ---
+interface PredictionFetchResult {
+  id: string;
+  status: PredictionStatus; // "thành công" or "thất bại"
+  prediction: PredictionResponseForDisplay | null;
+  error: string | null;
+}
+// --- END: New Interface for typed promise results ---
+
 // --- START: Component Upload (Component chính của trang) ---
 const Upload: React.FC = () => {
   const accentHeadingColor = useColorModeValue("teal.600", "teal.300");
@@ -843,7 +845,6 @@ const Upload: React.FC = () => {
   const [currentDetailedPrediction, setCurrentDetailedPrediction] =
     useState<PredictionResponseForDisplay | null>(null);
 
-  // State for Firebase save operation
   const [isSavingToFirebase, setIsSavingToFirebase] = useState(false);
 
   const toast = useToast();
@@ -895,7 +896,7 @@ const Upload: React.FC = () => {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const newFilesFromInput = Array.from(event.target.files);
-      const MAX_FILES = 14;
+      const MAX_FILES = 14; // Changed from 14 to 7 to match UI
       const currentFileCount = uploadedFiles.length;
 
       if (currentFileCount + newFilesFromInput.length > MAX_FILES) {
@@ -1070,116 +1071,124 @@ const Upload: React.FC = () => {
       )
     );
 
-    const predictionPromises = filesToPredict.map(async (imageFile) => {
-      const formData = new FormData();
-      formData.append("file", imageFile.file, imageFile.file.name);
-      try {
-        const response = await fetch(PREDICT_API_URL, {
-          method: "POST",
-          body: formData,
-        });
-        if (!response.ok) {
-          let errorDetail = `Lỗi server: ${response.status}`;
-          try {
-            const errorJson = await response.json();
-            errorDetail =
-              errorJson?.message ||
-              errorJson?.error ||
-              JSON.stringify(errorJson);
-          } catch (e) {
+    const predictionPromises = filesToPredict.map(
+      async (imageFile): Promise<PredictionFetchResult> => {
+        // Typed Promise
+        const formData = new FormData();
+        formData.append("file", imageFile.file, imageFile.file.name);
+        try {
+          const response = await fetch(PREDICT_API_URL, {
+            method: "POST",
+            body: formData,
+          });
+          if (!response.ok) {
+            let errorDetail = `Lỗi server: ${response.status}`;
             try {
-              errorDetail = await response.text();
-            } catch (textErr) {
-              /* ignore */
+              const errorJson = await response.json();
+              errorDetail =
+                errorJson?.message ||
+                errorJson?.error ||
+                JSON.stringify(errorJson);
+            } catch (e) {
+              try {
+                errorDetail = await response.text();
+              } catch (textErr) {
+                /* ignore */
+              }
             }
+            throw new Error(errorDetail);
           }
-          throw new Error(errorDetail);
+          const apiData: PredictionResponseFromApi = await response.json();
+          if (apiData.error) throw new Error(apiData.error);
+          if (!apiData.filename || !apiData.predictions)
+            throw new Error("Dữ liệu API trả về không đầy đủ.");
+          return {
+            // Conforms to PredictionFetchResult
+            id: imageFile.id,
+            status: "thành công",
+            prediction: {
+              filename: apiData.filename,
+              predictions: apiData.predictions,
+            } as PredictionResponseForDisplay,
+            error: null,
+          };
+        } catch (err: any) {
+          console.error(
+            `[Upload Component] Prediction error for ${imageFile.file.name}:`,
+            err
+          );
+          return {
+            // Conforms to PredictionFetchResult
+            id: imageFile.id,
+            status: "thất bại",
+            error: err.message || "Lỗi API",
+            prediction: null,
+          };
         }
-        const apiData: PredictionResponseFromApi = await response.json();
-        if (apiData.error) throw new Error(apiData.error);
-        if (!apiData.filename || !apiData.predictions)
-          throw new Error("Dữ liệu API trả về không đầy đủ.");
-        return {
-          id: imageFile.id,
-          status: "thành công",
-          prediction: {
-            filename: apiData.filename,
-            predictions: apiData.predictions,
-          } as PredictionResponseForDisplay,
-          error: null,
-        };
-      } catch (err: any) {
-        console.error(
-          `[Upload Component] Prediction error for ${imageFile.file.name}:`,
-          err
-        );
-        return {
-          id: imageFile.id,
-          status: "thất bại",
-          error: err.message || "Lỗi API",
-          prediction: null,
-        };
       }
-    });
+    );
 
-    const results = await Promise.allSettled(predictionPromises);
+    const results = await Promise.allSettled(predictionPromises); // results is now PromiseSettledResult<PredictionFetchResult>[]
 
     let batchSuccessCountForToast = 0;
     const batchAttemptedCount = filesToPredict.length;
 
     results.forEach((r) => {
       if (r.status === "fulfilled") {
-        const value = r.value as {
-          status: PredictionStatus;
-          prediction?: PredictionResponseForDisplay;
-        };
-        if (value.status === "thành công" && value.prediction)
+        // r.value is PredictionFetchResult here
+        if (r.value.status === "thành công" && r.value.prediction) {
           batchSuccessCountForToast++;
+        }
       }
     });
 
     setUploadedFiles((prevFiles) => {
-      let newOverallLevelSum = 0;
-      let newOverallSuccessfulFilesWithLevel = 0;
-      const updatedFiles = prevFiles.map((existingFile) => {
-        let returnFile = { ...existingFile };
-        const resultFromBatch = results.find(
-          (r) =>
-            (r.status === "fulfilled" && r.value.id === existingFile.id) ||
-            (r.status === "rejected" &&
-              (r.reason as any)?.id === existingFile.id)
+      const updatedFilesArray = [...prevFiles]; // Create a mutable copy
+
+      results.forEach((result, index) => {
+        // `result` is PromiseSettledResult<PredictionFetchResult>
+        // `filesToPredict[index]` is the UploadedImageFile that this result corresponds to
+        const originalFileToPredict = filesToPredict[index];
+        const fileInStateIndex = updatedFilesArray.findIndex(
+          (f) => f.id === originalFileToPredict.id
         );
-        if (resultFromBatch) {
-          if (resultFromBatch.status === "fulfilled") {
-            const resValue = resultFromBatch.value;
-            returnFile = {
-              ...existingFile,
-              status: resValue.status,
-              prediction: resValue.prediction || null,
-              error: resValue.error || null,
+
+        if (fileInStateIndex !== -1) {
+          if (result.status === "fulfilled") {
+            const apiResult = result.value; // apiResult is PredictionFetchResult
+            updatedFilesArray[fileInStateIndex] = {
+              ...updatedFilesArray[fileInStateIndex],
+              status: apiResult.status, // Correctly typed: PredictionStatus
+              prediction: apiResult.prediction,
+              error: apiResult.error,
             };
           } else {
-            returnFile = {
-              ...existingFile,
-              status: "thất bại",
-              error:
-                (resultFromBatch.reason as Error)?.message ||
-                "Lỗi xử lý bất đồng bộ",
+            // result.status === "rejected"
+            updatedFilesArray[fileInStateIndex] = {
+              ...updatedFilesArray[fileInStateIndex],
+              status: "thất bại", // Directly assign valid PredictionStatus
               prediction: null,
+              error:
+                (result.reason as Error)?.message ||
+                "Lỗi không xác định khi xử lý file.",
             };
           }
         }
-        if (returnFile.status === "thành công" && returnFile.prediction) {
-          const levelNum = parseLevel(
-            returnFile.prediction.predictions.level.label
-          );
+      });
+
+      // Recalculate overall stats from updatedFilesArray
+      let newOverallLevelSum = 0;
+      let newOverallSuccessfulFilesWithLevel = 0;
+      updatedFilesArray.forEach((file) => {
+        if (file.status === "thành công" && file.prediction) {
+          const levelNum = parseLevel(file.prediction.predictions.level.label);
           if (levelNum !== null) {
             newOverallLevelSum += levelNum;
             newOverallSuccessfulFilesWithLevel++;
           }
         }
-        return returnFile;
       });
+
       if (newOverallSuccessfulFilesWithLevel > 0) {
         const avg = newOverallLevelSum / newOverallSuccessfulFilesWithLevel;
         setAverageLevel(avg);
@@ -1188,7 +1197,7 @@ const Upload: React.FC = () => {
         setAverageLevel(null);
         setSkillRank(null);
       }
-      return updatedFiles;
+      return updatedFilesArray;
     });
 
     setOverallPredictionInProgress(false);
@@ -1259,7 +1268,7 @@ const Upload: React.FC = () => {
 
     const processedImagesData: SavedImagePrediction[] = successfulUploads.map(
       (file) => ({
-        filename: file.file.name, // Using original file name
+        filename: file.file.name,
         category: file.prediction!.predictions.category,
         sub_category: file.prediction!.predictions.sub_category,
         level: file.prediction!.predictions.level,
@@ -1269,12 +1278,11 @@ const Upload: React.FC = () => {
 
     const assessmentData: AssessmentRecord = {
       workerInfo: workerInfo,
-      averageLevel: parseFloat(averageLevel.toFixed(2)), // Ensure number
+      averageLevel: parseFloat(averageLevel.toFixed(2)),
       skillRankLabel: skillRank.label,
       skillRankValue: skillRank.rank,
       processedImages: processedImagesData,
-      savedAt: Timestamp.now(), // Firebase Timestamp
-      // sessionId: // generate a unique session ID if needed
+      savedAt: Timestamp.now(),
     };
 
     try {
@@ -1343,6 +1351,7 @@ const Upload: React.FC = () => {
       processedSuccessfullyFilesCount,
     ]
   );
+  const MAX_FILES_ALLOWED = 14; // Consistent MAX_FILES constant
 
   return (
     <>
@@ -1421,7 +1430,8 @@ const Upload: React.FC = () => {
               fontWeight="500"
               mb={4}
             >
-              Yêu cầu ảnh tải lên: (Tối đa 14 ảnh, JPG, PNG, WEBP, HEIC)
+              Yêu cầu ảnh tải lên: (Tối đa {MAX_FILES_ALLOWED} ảnh, JPG, PNG,
+              WEBP, HEIC)
             </Text>
             <List
               spacing={1}
@@ -1480,7 +1490,7 @@ const Upload: React.FC = () => {
                       Nhấn hoặc kéo thả ảnh vào đây
                     </Text>
                     <Text fontSize="sm" color={textColor}>
-                      Hỗ trợ nhiều file (tối đa 7 ảnh)
+                      Hỗ trợ nhiều file (tối đa {MAX_FILES_ALLOWED} ảnh)
                     </Text>
                   </VStack>
                 </Box>
@@ -1488,7 +1498,7 @@ const Upload: React.FC = () => {
                 {uploadedFiles.length > 0 && (
                   <Box>
                     <Heading size="sm" mb={3} color={textColor}>
-                      Ảnh đã chọn ({uploadedFiles.length}/7):
+                      Ảnh đã chọn ({uploadedFiles.length}/{MAX_FILES_ALLOWED}):
                     </Heading>
                     <Wrap spacing={4} justify="start">
                       {uploadedFiles.map((imageFile) => (
@@ -1575,18 +1585,17 @@ const Upload: React.FC = () => {
                     />
                   )}
 
-                {/* Save to Firebase Button */}
                 {canSaveToFirebase && !overallPredictionInProgress && (
                   <Button
                     onClick={handleSaveToFirebase}
                     isLoading={isSavingToFirebase}
                     loadingText="Đang lưu..."
-                    colorScheme="purple" // Different color for save
+                    colorScheme="purple"
                     size="lg"
                     leftIcon={<FiSave />}
                     w="full"
                     py={6}
-                    mt={6} // Add some margin top
+                    mt={6}
                   >
                     Lưu Kết Quả vào Cơ sở dữ liệu
                   </Button>
@@ -1620,7 +1629,6 @@ const Upload: React.FC = () => {
         </Container>
       </Box>
       <Footer />
-      {/* <HealthTips /> */}
     </>
   );
 };
