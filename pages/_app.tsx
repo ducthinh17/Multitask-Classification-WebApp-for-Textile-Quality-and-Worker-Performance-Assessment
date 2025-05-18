@@ -7,7 +7,7 @@ import LoginPage from "./LoginPage";
 import { AuthProvider } from "@/components/AuthContext";
 
 import "../components/homePage.css";
-import "../pages/eyes.css";
+import "../pages/upload.css";
 import "../pages/about.css";
 
 function MyApp({ Component, pageProps }: AppProps) {

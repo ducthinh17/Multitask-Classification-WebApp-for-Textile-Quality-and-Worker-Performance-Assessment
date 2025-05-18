@@ -114,7 +114,7 @@ const Services = () => {
         <Flex justify="center" mt={8} gap={6} wrap="wrap">
           <Button
             as={Link}
-            href="/eyes"
+            href="/upload"
             colorScheme="orange"
             size="lg"
             px={10}

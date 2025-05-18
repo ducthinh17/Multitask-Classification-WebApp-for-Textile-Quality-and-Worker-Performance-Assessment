@@ -99,7 +99,7 @@ const NAV_ITEMS: Array<NavItem> = [
   },
   {
     label: "Đánh giá",
-    href: "/eyes",
+    href: "/upload",
   },
   {
     label: "Tính năng",
@@ -108,7 +108,7 @@ const NAV_ITEMS: Array<NavItem> = [
       {
         label: "Khám phá Tính năng A",
         subLabel: "Mô tả ngắn gọn về A",
-        href: "/features/a",
+        href: "/database",
       },
       {
         label: "Tìm hiểu Tính năng B",

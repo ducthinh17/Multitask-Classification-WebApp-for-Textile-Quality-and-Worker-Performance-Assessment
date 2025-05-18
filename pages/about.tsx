@@ -107,7 +107,7 @@ const QuyTrinhDanhGiaPage: React.FC = () => {
             >
               <Button
                 as={Link}
-                href="/eyes"
+                href="/upload"
                 size="lg"
                 colorScheme="yellow"
                 color="gray.800"

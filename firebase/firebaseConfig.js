@@ -7,13 +7,13 @@ import { getAnalytics } from "firebase/analytics"; // Import Analytics
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyCsjOW7ox8EmfOpRYko1pJctYsXLBy3CA4",
-  authDomain: "website-ocular.firebaseapp.com",
-  projectId: "website-ocular",
-  storageBucket: "website-ocular.appspot.com",
-  messagingSenderId: "201119587833",
-  appId: "1:201119587833:web:ed82fda48f31fec6c9b128",
-  measurementId: "G-KLX9NCFCTB",
+  apiKey: "AIzaSyAlRhlAhDkNLTdLkdJLuZ2cwDGYUocEvjk",
+  authDomain: "medical-app-a7861.firebaseapp.com",
+  projectId: "medical-app-a7861",
+  storageBucket: "medical-app-a7861.firebasestorage.app",
+  messagingSenderId: "1030659391468",
+  appId: "1:1030659391468:web:5932701e19726d437f0ac9",
+  measurementId: "G-KMBX65FQZR",
 };
 
 // Initialize Firebase
