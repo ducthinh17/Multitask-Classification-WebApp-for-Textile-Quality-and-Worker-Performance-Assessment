@@ -6,13 +6,13 @@ import { getStorage } from "firebase/storage";
 import { getAnalytics } from "firebase/analytics"; // Import Analytics
 
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_FIREBASE_APP_ID,
-  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
+  apiKey: "AIzaSyAlRhlAhDkNLTdLkdJLuZ2cwDGYUocEvjk",
+  authDomain: "medical-app-a7861.firebaseapp.com",
+  projectId: "medical-app-a7861",
+  storageBucket: "medical-app-a7861.firebasestorage.app",
+  messagingSenderId: "1030659391468",
+  appId: "1:1030659391468:web:5932701e19726d437f0ac9",
+  measurementId: "G-KMBX65FQZR",
 };
 
 // Initialize Firebase
